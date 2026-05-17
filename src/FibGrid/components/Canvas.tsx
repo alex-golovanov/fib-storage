@@ -1,5 +1,6 @@
-import { useRef, useEffect, useCallback } from "react";
-import { U, GRID, PAD, MM, FIB } from "../lib/constants";
+import { useRef, useEffect, useCallback, useState } from "react";
+import { U as U_DEFAULT, GRID, PAD, MM, FIB } from "../lib/constants";
+import { computeU } from "../lib/canvas-sizing";
 import { toGrid, canPlace } from "../lib/grid-utils";
 import {
   drawBackground,
@@ -28,8 +29,6 @@ interface CanvasProps {
   onRemoveAt: (x: number, y: number) => boolean;
 }
 
-const INNER_PX = GRID * U;
-
 export function Canvas({
   placed,
   hover,
@@ -40,15 +39,41 @@ export function Canvas({
   onPlace,
   onRemoveAt,
 }: CanvasProps) {
+  const wrapperRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const rafRef = useRef<number>(0);
+  const [u, setU] = useState(U_DEFAULT);
 
-  const pxPerMm = U / MM;
-  const gapPx = physical.gapMm * pxPerMm;
+  const pxPerMm = u / MM;
   const wallMm = (physical.outerMm - GRID * MM) / 2;
   const wallPx = wallMm * pxPerMm;
-  const cw = INNER_PX + 2 * wallPx + 2 * PAD;
+  const gapPx = physical.gapMm * pxPerMm;
+  const innerPx = GRID * u;
+  const cw = innerPx + 2 * wallPx + 2 * PAD;
   const ch = cw;
+
+  // Observe container size and recompute u
+  useEffect(() => {
+    const el = wrapperRef.current;
+    if (!el) return;
+
+    const update = () => {
+      const rect = el.getBoundingClientRect();
+      // Wall thickness in pixels depends on U, but U depends on the wall.
+      // Two-pass: estimate U ignoring wall, then re-estimate with wall at that U.
+      const wallMmLocal = (physical.outerMm - GRID * MM) / 2;
+      const provisional = computeU(rect.width, rect.height, 0);
+      const wallAtProvisional = wallMmLocal * (provisional / MM);
+      const final = computeU(rect.width, rect.height, wallAtProvisional);
+      setU((prev) => (prev === final ? prev : final));
+    };
+
+    update();
+
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [physical.outerMm]);
 
   const draw = useCallback(() => {
     const cv = canvasRef.current;
@@ -57,11 +82,11 @@ export function Canvas({
     if (!ctx) return;
 
     drawBackground(ctx, cw, ch);
-    drawFrameWall(ctx, PAD + wallPx, INNER_PX, wallPx);
-    drawPlacedModules(ctx, placed, U, PAD + wallPx, MM, gapPx);
-    drawGrid(ctx, U, GRID, PAD + wallPx, FIB);
-    drawBorder(ctx, PAD + wallPx, GRID, U);
-    drawRulerTicks(ctx, FIB, U, PAD + wallPx, GRID, MM);
+    drawFrameWall(ctx, PAD + wallPx, innerPx, wallPx);
+    drawPlacedModules(ctx, placed, u, PAD + wallPx, MM, gapPx);
+    drawGrid(ctx, u, GRID, PAD + wallPx, FIB);
+    drawBorder(ctx, PAD + wallPx, GRID, u);
+    drawRulerTicks(ctx, FIB, u, PAD + wallPx, GRID, MM);
 
     if (hover && effSelected) {
       const ok = canPlace(effSelected.w, effSelected.d, hover.x, hover.y, occ);
@@ -71,12 +96,12 @@ export function Canvas({
         effSelected.w,
         effSelected.d,
         ok,
-        U,
+        u,
         PAD + wallPx,
         gapPx,
       );
     }
-  }, [placed, hover, effSelected, occ, gapPx, wallPx, cw, ch]);
+  }, [placed, hover, effSelected, occ, gapPx, wallPx, cw, ch, innerPx, u]);
 
   useEffect(() => {
     const cv = canvasRef.current;
@@ -95,14 +120,14 @@ export function Canvas({
     (e: React.MouseEvent<HTMLCanvasElement>) => {
       const cv = canvasRef.current;
       if (!cv) return;
-      const { x, y } = toGrid(e.clientX, e.clientY, cv, U, PAD + wallPx);
+      const { x, y } = toGrid(e.clientX, e.clientY, cv, u, PAD + wallPx);
       if (x >= 0 && x < GRID && y >= 0 && y < GRID) {
         onHoverChange({ x, y });
       } else {
         onHoverChange(null);
       }
     },
-    [onHoverChange, wallPx],
+    [onHoverChange, wallPx, u],
   );
 
   const handleClick = useCallback(() => {
@@ -124,10 +149,13 @@ export function Canvas({
   }, [onHoverChange]);
 
   return (
-    <div className="relative">
+    <div
+      ref={wrapperRef}
+      className="relative flex-1 flex items-center justify-center overflow-hidden"
+    >
       <canvas
         ref={canvasRef}
-        className={`block max-w-full ${effSelected ? "cursor-crosshair" : "cursor-default"}`}
+        className={`block ${effSelected ? "cursor-crosshair" : "cursor-default"}`}
         style={{ imageRendering: "pixelated" }}
         onMouseMove={handleMouseMove}
         onClick={handleClick}
@@ -136,7 +164,7 @@ export function Canvas({
       />
       {hover && (
         <div
-          className="absolute bottom-9 left-3 px-[7px] py-[3px] text-[9px] pointer-events-none"
+          className="absolute bottom-3 left-3 px-[7px] py-[3px] text-[9px] pointer-events-none"
           style={{
             background: "rgba(14, 14, 17, 0.8)",
             border: "1px solid #2e3040",

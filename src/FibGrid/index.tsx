@@ -1,12 +1,26 @@
-import { useEffect, useCallback } from "react";
+import { useEffect, useCallback, useState } from "react";
 import { Canvas } from "./components/Canvas";
 import { ModulePalette } from "./components/ModulePalette";
-import { StatsPanel } from "./components/StatsPanel";
 import { Toolbar } from "./components/Toolbar";
+import { MinViewportNotice } from "./components/MinViewportNotice";
 import { useFibGrid } from "./hooks/useFibGrid";
 import { useUndoRedo } from "./hooks/useUndoRedo";
 import { usePersistence } from "./hooks/usePersistence";
 import { exportPNG, exportCSV } from "./lib/export";
+
+const MIN_VIEWPORT_WIDTH = 1024;
+
+function useViewportWidth() {
+  const [width, setWidth] = useState(() =>
+    typeof window === "undefined" ? MIN_VIEWPORT_WIDTH : window.innerWidth,
+  );
+  useEffect(() => {
+    const onResize = () => setWidth(window.innerWidth);
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
+  return width;
+}
 
 export default function FibGrid() {
   const grid = useFibGrid();
@@ -17,6 +31,7 @@ export default function FibGrid() {
     grid.load,
     grid.loadPhysical,
   );
+  const width = useViewportWidth();
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -67,21 +82,30 @@ export default function FibGrid() {
     if (canvas) exportPNG(canvas);
   }, []);
 
+  if (width < MIN_VIEWPORT_WIDTH) {
+    return <MinViewportNotice />;
+  }
+
   return (
     <div
-      className="flex gap-0 min-h-screen select-none"
+      className="grid h-screen w-screen overflow-hidden select-none"
       style={{
         background: "#0e0e11",
         color: "#c8c8d4",
         fontFamily: "'DM Mono', 'Fira Mono', monospace",
+        gridTemplateColumns: "1fr 260px",
       }}
     >
-      <div className="p-6 flex flex-col gap-3 flex-shrink-0">
+      <div className="flex flex-col min-w-0 min-h-0">
         <Toolbar
           placed={grid.placed}
           physical={grid.physical}
           onGapChange={grid.setGap}
           onOuterChange={grid.setOuter}
+          onExportJSON={exportJSON}
+          onExportPNG={handleExportPNG}
+          onExportCSV={() => exportCSV(grid.placed, grid.physical)}
+          onClearAll={grid.clearAll}
         />
         <Canvas
           placed={grid.placed}
@@ -96,7 +120,7 @@ export default function FibGrid() {
       </div>
 
       <div
-        className="w-[260px] flex flex-col p-5 gap-4 overflow-y-auto"
+        className="flex flex-col p-5 gap-2 overflow-y-auto"
         style={{ background: "#111217", borderLeft: "1px solid #1a1c24" }}
       >
         <ModulePalette
@@ -105,13 +129,6 @@ export default function FibGrid() {
           effSelected={grid.effSelected}
           onSelect={grid.select}
           onRotate={grid.rotate}
-        />
-        <StatsPanel
-          placed={grid.placed}
-          onClearAll={grid.clearAll}
-          onExportJSON={exportJSON}
-          onExportPNG={handleExportPNG}
-          onExportCSV={() => exportCSV(grid.placed, grid.physical)}
         />
       </div>
     </div>
