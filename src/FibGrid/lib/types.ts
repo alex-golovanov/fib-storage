@@ -20,3 +20,8 @@ export interface GridPos {
 }
 
 export type Category = "narrow" | "medium" | "large";
+
+export interface PhysicalConfig {
+  gapMm: number;
+  outerMm: number;
+}

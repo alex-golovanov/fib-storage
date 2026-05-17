@@ -11,7 +11,12 @@ import { exportPNG, exportCSV } from "./lib/export";
 export default function FibGrid() {
   const grid = useFibGrid();
   const { undo, redo, pushHistory } = useUndoRedo(grid);
-  const { exportJSON } = usePersistence(grid.placed, grid.load);
+  const { exportJSON } = usePersistence(
+    grid.placed,
+    grid.physical,
+    grid.load,
+    grid.loadPhysical,
+  );
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -45,7 +50,7 @@ export default function FibGrid() {
       if (success) pushHistory();
       return success;
     },
-    [grid, pushHistory]
+    [grid, pushHistory],
   );
 
   const handleRemoveAt = useCallback(
@@ -54,7 +59,7 @@ export default function FibGrid() {
       if (success) pushHistory();
       return success;
     },
-    [grid, pushHistory]
+    [grid, pushHistory],
   );
 
   const handleExportPNG = useCallback(() => {
@@ -72,12 +77,18 @@ export default function FibGrid() {
       }}
     >
       <div className="p-6 flex flex-col gap-3 flex-shrink-0">
-        <Toolbar placed={grid.placed} />
+        <Toolbar
+          placed={grid.placed}
+          physical={grid.physical}
+          onGapChange={grid.setGap}
+          onOuterChange={grid.setOuter}
+        />
         <Canvas
           placed={grid.placed}
           hover={grid.hover}
           effSelected={grid.effSelected}
           occ={grid.occ}
+          physical={grid.physical}
           onHoverChange={grid.setHoverPos}
           onPlace={handlePlace}
           onRemoveAt={handleRemoveAt}
@@ -100,7 +111,7 @@ export default function FibGrid() {
           onClearAll={grid.clearAll}
           onExportJSON={exportJSON}
           onExportPNG={handleExportPNG}
-          onExportCSV={() => exportCSV(grid.placed)}
+          onExportCSV={() => exportCSV(grid.placed, grid.physical)}
         />
       </div>
     </div>

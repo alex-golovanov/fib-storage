@@ -21,9 +21,19 @@ export const MODULES = [
 ];
 
 export const PALETTE = [
-  "#e8a23c", "#5bb8a6", "#c46b8a", "#6fa3d4", "#a07ed4",
-  "#78c47a", "#d47864", "#b8b84a", "#64a8c8", "#d4906a",
-  "#8ac890", "#c8788a", "#7890c8",
+  "#e8a23c",
+  "#5bb8a6",
+  "#c46b8a",
+  "#6fa3d4",
+  "#a07ed4",
+  "#78c47a",
+  "#d47864",
+  "#b8b84a",
+  "#64a8c8",
+  "#d4906a",
+  "#8ac890",
+  "#c8788a",
+  "#7890c8",
 ];
 
 export const COMBOS = [
@@ -34,3 +44,11 @@ export const COMBOS = [
   [[3, 5, 5, 8, 13], "3+5+5+8+13"],
   [[5, 5, 3, 8, 13], "5+5+3+8+13"],
 ] as const;
+
+export const GAP_MM_DEFAULT = 0.3;
+export const GAP_MM_MAX = 1.0;
+export const GAP_MM_STEP = 0.1;
+
+export const OUTER_MM_DEFAULT = 238;
+export const OUTER_MM_MAX = 256;
+export const OUTER_MM_STEP = 1;

@@ -1,10 +1,16 @@
 import type { PlacedModule } from "./types";
 
+function formatBuiltMm(value: number): string {
+  const rounded = Number(value.toFixed(1));
+
+  return Number.isInteger(rounded) ? rounded.toFixed(0) : rounded.toFixed(1);
+}
+
 export function drawBackground(
   ctx: CanvasRenderingContext2D,
   cw: number,
   ch: number,
-  bgColor: string = "#0e0e11"
+  bgColor: string = "#0e0e11",
 ): void {
   ctx.fillStyle = bgColor;
   ctx.fillRect(0, 0, cw, ch);
@@ -15,20 +21,41 @@ export function drawPlacedModules(
   placed: PlacedModule[],
   u: number,
   pad: number,
-  mm: number
+  mm: number,
+  gapPx: number,
 ): void {
+  const inset = gapPx / 2;
+  const gapMm = (gapPx * mm) / u;
+
   for (const p of placed) {
-    const px = pad + p.x * u;
-    const py = pad + p.y * u;
-    const pw = p.w * u;
-    const ph = p.d * u;
+    const nominalX = pad + p.x * u;
+    const nominalY = pad + p.y * u;
+    const nominalW = p.w * u;
+    const nominalH = p.d * u;
+    const px = pad + p.x * u + inset;
+    const py = pad + p.y * u + inset;
+    const pw = p.w * u - gapPx;
+    const ph = p.d * u - gapPx;
+
+    if (gapPx > 0) {
+      ctx.fillStyle = p.color + "10";
+      ctx.fillRect(nominalX, nominalY, nominalW, nominalH);
+      ctx.strokeStyle = p.color + "38";
+      ctx.lineWidth = 1;
+      ctx.strokeRect(
+        nominalX + 0.5,
+        nominalY + 0.5,
+        nominalW - 1,
+        nominalH - 1,
+      );
+    }
 
     ctx.fillStyle = p.color + "28";
-    ctx.fillRect(px + 1, py + 1, pw - 2, ph - 2);
+    ctx.fillRect(px, py, pw, ph);
 
     ctx.strokeStyle = p.color + "cc";
     ctx.lineWidth = 1.5;
-    ctx.strokeRect(px + 1, py + 1, pw - 2, ph - 2);
+    ctx.strokeRect(px, py, pw, ph);
 
     ctx.save();
     ctx.strokeStyle = p.color + "18";
@@ -49,11 +76,18 @@ export function drawPlacedModules(
     const minDim = Math.min(pw, ph);
     if (minDim >= 22) {
       const fs = Math.max(7, Math.min(11, minDim / 4.5));
+      const builtWidthMm = p.w * mm - gapMm;
+      const builtDepthMm = p.d * mm - gapMm;
+
       ctx.fillStyle = p.color + "ee";
       ctx.font = `600 ${fs}px 'DM Mono', monospace`;
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
-      ctx.fillText(`${p.w * mm}×${p.d * mm}`, px + pw / 2, py + ph / 2);
+      ctx.fillText(
+        `${formatBuiltMm(builtWidthMm)}×${formatBuiltMm(builtDepthMm)}`,
+        px + pw / 2,
+        py + ph / 2,
+      );
     }
   }
 }
@@ -63,7 +97,7 @@ export function drawGrid(
   u: number,
   grid: number,
   pad: number,
-  fib: number[]
+  fib: number[],
 ): void {
   for (let i = 0; i <= grid; i++) {
     const isFib = fib.includes(i) || i === 0;
@@ -84,7 +118,7 @@ export function drawBorder(
   ctx: CanvasRenderingContext2D,
   pad: number,
   grid: number,
-  u: number
+  u: number,
 ): void {
   ctx.strokeStyle = "#44475a";
   ctx.lineWidth = 1.5;
@@ -97,7 +131,7 @@ export function drawRulerTicks(
   u: number,
   pad: number,
   grid: number,
-  mm: number
+  mm: number,
 ): void {
   ctx.fillStyle = "#44475a";
   ctx.font = "8px 'DM Mono', monospace";
@@ -122,18 +156,57 @@ export function drawHoverPreview(
   d: number,
   canPlace: boolean,
   u: number,
-  pad: number
+  pad: number,
+  gapPx: number,
 ): void {
-  const hx = pad + hover.x * u;
-  const hy = pad + hover.y * u;
-  const hw = w * u;
-  const hh = d * u;
+  const inset = gapPx / 2;
+  const nominalX = pad + hover.x * u;
+  const nominalY = pad + hover.y * u;
+  const nominalW = w * u;
+  const nominalH = d * u;
+  const hx = pad + hover.x * u + inset;
+  const hy = pad + hover.y * u + inset;
+  const hw = w * u - gapPx;
+  const hh = d * u - gapPx;
+  const fill = canPlace ? "#e8a23c" : "#e05c6e";
 
-  ctx.fillStyle = canPlace ? "#e8a23c18" : "#e05c6e18";
+  if (gapPx > 0) {
+    ctx.fillStyle = fill + "10";
+    ctx.fillRect(nominalX, nominalY, nominalW, nominalH);
+    ctx.strokeStyle = fill + "66";
+    ctx.lineWidth = 1;
+    ctx.setLineDash([6, 4]);
+    ctx.strokeRect(nominalX + 0.5, nominalY + 0.5, nominalW - 1, nominalH - 1);
+  }
+
+  ctx.fillStyle = fill + "18";
   ctx.fillRect(hx, hy, hw, hh);
-  ctx.strokeStyle = canPlace ? "#e8a23c" : "#e05c6e";
+  ctx.strokeStyle = fill;
   ctx.lineWidth = 1.5;
   ctx.setLineDash([5, 3]);
-  ctx.strokeRect(hx + 1, hy + 1, hw - 2, hh - 2);
+  ctx.strokeRect(hx, hy, hw, hh);
   ctx.setLineDash([]);
+}
+
+export function drawFrameWall(
+  ctx: CanvasRenderingContext2D,
+  pad: number,
+  innerPx: number,
+  wallPx: number,
+): void {
+  if (wallPx <= 0) return;
+
+  const outerX = pad - wallPx;
+  const outerY = pad - wallPx;
+  const outerSide = innerPx + 2 * wallPx;
+
+  ctx.fillStyle = "#1a1c24";
+  ctx.fillRect(outerX, outerY, outerSide, wallPx);
+  ctx.fillRect(outerX, pad + innerPx, outerSide, wallPx);
+  ctx.fillRect(outerX, pad, wallPx, innerPx);
+  ctx.fillRect(pad + innerPx, pad, wallPx, innerPx);
+
+  ctx.strokeStyle = "#2e3040";
+  ctx.lineWidth = 1;
+  ctx.strokeRect(outerX + 0.5, outerY + 0.5, outerSide - 1, outerSide - 1);
 }
