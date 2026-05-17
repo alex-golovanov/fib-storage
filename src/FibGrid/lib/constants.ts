@@ -1,4 +1,5 @@
 export const U = 15;
+export const U_MIN = 12;
 export const GRID = 34;
 export const PAD = 28;
 export const MM = 7;
