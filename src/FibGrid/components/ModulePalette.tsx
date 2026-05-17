@@ -10,7 +10,53 @@ interface ModulePaletteProps {
 }
 
 const label = (m: Module) => `${m.w * MM}×${m.d * MM}`;
-const unitLbl = (m: Module) => `${m.w}u×${m.d}u`;
+
+const CATEGORY_COLS: Record<Module["cat"], number> = {
+  narrow: 3,
+  medium: 3,
+  large: 2,
+};
+
+function ShapeTile({
+  module,
+  isActive,
+  onClick,
+}: {
+  module: Module;
+  isActive: boolean;
+  onClick: () => void;
+}) {
+  // Shape is sized as a fraction of inner padded area; max dimension = 34u.
+  const wPct = (module.w / 34) * 100;
+  const hPct = (module.d / 34) * 100;
+  return (
+    <button
+      onClick={onClick}
+      title={`${label(module)} mm`}
+      className="relative aspect-square cursor-pointer transition-colors duration-100 flex items-center justify-center"
+      style={{
+        background: isActive ? "#1e2030" : "transparent",
+        border: `1px solid ${isActive ? "#e8a23c" : "#1a1c24"}`,
+        padding: "6px",
+      }}
+      onMouseEnter={(e) => {
+        if (!isActive) e.currentTarget.style.background = "#181a22";
+      }}
+      onMouseLeave={(e) => {
+        if (!isActive) e.currentTarget.style.background = "transparent";
+      }}
+    >
+      <div
+        style={{
+          width: `${wPct}%`,
+          height: `${hPct}%`,
+          background: isActive ? "#e8a23c22" : "#1e2030",
+          border: `1px solid ${isActive ? "#e8a23c" : "#2e3040"}`,
+        }}
+      />
+    </button>
+  );
+}
 
 export function ModulePalette({
   selected,
@@ -20,59 +66,43 @@ export function ModulePalette({
   onRotate,
 }: ModulePaletteProps) {
   return (
-    <div className="flex flex-col gap-4">
-      <div className="text-[9px] uppercase tracking-[2px] mb-3" style={{ color: "#44475a" }}>
+    <div className="flex flex-col gap-3">
+      <div
+        className="text-[9px] uppercase tracking-[2px]"
+        style={{ color: "#44475a" }}
+      >
         Module Catalogue
       </div>
 
       {(["narrow", "medium", "large"] as const).map((cat) => (
-        <div key={cat} className="mb-4">
+        <div key={cat}>
           <div
             className="text-[8px] uppercase tracking-[2px] pb-1 mb-1.5"
             style={{ color: "#333547", borderBottom: "1px solid #1a1c24" }}
           >
             {cat}
           </div>
-          <div className="flex flex-col gap-1">
-            {MODULES.filter((m) => m.cat === cat).map((m) => {
-              const isActive = selected?.id === m.id;
-              return (
-                <button
-                  key={m.id}
-                  onClick={() => onSelect(m)}
-                  className="flex justify-between items-center px-2.5 py-1.5 text-[11px] cursor-pointer transition-all duration-100 border"
-                  style={{
-                    background: isActive ? "#1e2030" : "transparent",
-                    borderColor: isActive ? "#e8a23c44" : "#1a1c24",
-                    color: isActive ? "#e8a23c" : "#888aaa",
-                  }}
-                  onMouseEnter={(e) => {
-                    if (!isActive) {
-                      e.currentTarget.style.background = "#181a22";
-                      e.currentTarget.style.color = "#b8bacc";
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (!isActive) {
-                      e.currentTarget.style.background = "transparent";
-                      e.currentTarget.style.color = "#888aaa";
-                    }
-                  }}
-                >
-                  <span>{label(m)} mm</span>
-                  <span className="text-[9px]" style={{ color: "#44475a" }}>
-                    {unitLbl(m)}
-                  </span>
-                </button>
-              );
-            })}
+          <div
+            className="grid gap-1.5"
+            style={{
+              gridTemplateColumns: `repeat(${CATEGORY_COLS[cat]}, 1fr)`,
+            }}
+          >
+            {MODULES.filter((m) => m.cat === cat).map((m) => (
+              <ShapeTile
+                key={m.id}
+                module={m}
+                isActive={selected?.id === m.id}
+                onClick={() => onSelect(m)}
+              />
+            ))}
           </div>
         </div>
       ))}
 
       {selected && (
         <div
-          className="flex flex-col gap-2.5 p-3"
+          className="flex flex-col gap-2.5 p-3 mt-2"
           style={{ background: "#1a1c24", border: "1px solid #2e3040" }}
         >
           <div className="text-[9px] tracking-[1px]" style={{ color: "#44475a" }}>
