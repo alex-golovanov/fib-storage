@@ -3,32 +3,39 @@ import { U, GRID, PAD, MM, FIB } from "../lib/constants";
 import { toGrid, canPlace } from "../lib/grid-utils";
 import {
   drawBackground,
+  drawFrameWall,
   drawPlacedModules,
   drawGrid,
   drawBorder,
   drawRulerTicks,
   drawHoverPreview,
 } from "../lib/canvas-draw";
-import type { Module, PlacedModule, GridPos } from "../lib/types";
+import type {
+  GridPos,
+  Module,
+  PhysicalConfig,
+  PlacedModule,
+} from "../lib/types";
 
 interface CanvasProps {
   placed: PlacedModule[];
   hover: GridPos | null;
   effSelected: Module | null;
   occ: (string | null)[][];
+  physical: PhysicalConfig;
   onHoverChange: (pos: GridPos | null) => void;
   onPlace: (w: number, d: number, x: number, y: number) => boolean;
   onRemoveAt: (x: number, y: number) => boolean;
 }
 
-const CW = GRID * U + PAD * 2;
-const CH = GRID * U + PAD * 2;
+const INNER_PX = GRID * U;
 
 export function Canvas({
   placed,
   hover,
   effSelected,
   occ,
+  physical,
   onHoverChange,
   onPlace,
   onRemoveAt,
@@ -36,31 +43,48 @@ export function Canvas({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const rafRef = useRef<number>(0);
 
+  const pxPerMm = U / MM;
+  const gapPx = physical.gapMm * pxPerMm;
+  const wallMm = (physical.outerMm - GRID * MM) / 2;
+  const wallPx = wallMm * pxPerMm;
+  const cw = INNER_PX + 2 * wallPx + 2 * PAD;
+  const ch = cw;
+
   const draw = useCallback(() => {
     const cv = canvasRef.current;
     if (!cv) return;
     const ctx = cv.getContext("2d");
     if (!ctx) return;
 
-    drawBackground(ctx, CW, CH);
-    drawPlacedModules(ctx, placed, U, PAD, MM);
-    drawGrid(ctx, U, GRID, PAD, FIB);
-    drawBorder(ctx, PAD, GRID, U);
-    drawRulerTicks(ctx, FIB, U, PAD, GRID, MM);
+    drawBackground(ctx, cw, ch);
+    drawFrameWall(ctx, PAD + wallPx, INNER_PX, wallPx);
+    drawPlacedModules(ctx, placed, U, PAD + wallPx, MM, gapPx);
+    drawGrid(ctx, U, GRID, PAD + wallPx, FIB);
+    drawBorder(ctx, PAD + wallPx, GRID, U);
+    drawRulerTicks(ctx, FIB, U, PAD + wallPx, GRID, MM);
 
     if (hover && effSelected) {
       const ok = canPlace(effSelected.w, effSelected.d, hover.x, hover.y, occ);
-      drawHoverPreview(ctx, hover, effSelected.w, effSelected.d, ok, U, PAD);
+      drawHoverPreview(
+        ctx,
+        hover,
+        effSelected.w,
+        effSelected.d,
+        ok,
+        U,
+        PAD + wallPx,
+        gapPx,
+      );
     }
-  }, [placed, hover, effSelected, occ]);
+  }, [placed, hover, effSelected, occ, gapPx, wallPx, cw, ch]);
 
   useEffect(() => {
     const cv = canvasRef.current;
     if (!cv) return;
-    cv.width = CW;
-    cv.height = CH;
+    cv.width = cw;
+    cv.height = ch;
     draw();
-  }, [draw]);
+  }, [draw, cw, ch]);
 
   useEffect(() => {
     cancelAnimationFrame(rafRef.current);
@@ -71,23 +95,20 @@ export function Canvas({
     (e: React.MouseEvent<HTMLCanvasElement>) => {
       const cv = canvasRef.current;
       if (!cv) return;
-      const { x, y } = toGrid(e.clientX, e.clientY, cv, U, PAD);
+      const { x, y } = toGrid(e.clientX, e.clientY, cv, U, PAD + wallPx);
       if (x >= 0 && x < GRID && y >= 0 && y < GRID) {
         onHoverChange({ x, y });
       } else {
         onHoverChange(null);
       }
     },
-    [onHoverChange]
+    [onHoverChange, wallPx],
   );
 
-  const handleClick = useCallback(
-    (e: React.MouseEvent<HTMLCanvasElement>) => {
-      if (!effSelected || !hover) return;
-      onPlace(effSelected.w, effSelected.d, hover.x, hover.y);
-    },
-    [effSelected, hover, onPlace]
-  );
+  const handleClick = useCallback(() => {
+    if (!effSelected || !hover) return;
+    onPlace(effSelected.w, effSelected.d, hover.x, hover.y);
+  }, [effSelected, hover, onPlace]);
 
   const handleContextMenu = useCallback(
     (e: React.MouseEvent<HTMLCanvasElement>) => {
@@ -95,7 +116,7 @@ export function Canvas({
       if (!hover) return;
       onRemoveAt(hover.x, hover.y);
     },
-    [hover, onRemoveAt]
+    [hover, onRemoveAt],
   );
 
   const handleMouseLeave = useCallback(() => {

@@ -1,4 +1,5 @@
-import type { PlacedModule } from "./types";
+import { MM } from "./constants";
+import type { PhysicalConfig, PlacedModule } from "./types";
 
 export function exportPNG(canvas: HTMLCanvasElement): void {
   canvas.toBlob((blob) => {
@@ -12,12 +13,36 @@ export function exportPNG(canvas: HTMLCanvasElement): void {
   }, "image/png");
 }
 
-export function exportCSV(placed: PlacedModule[]): void {
-  const lines = ["id,width_mm,depth_mm,x,y,color"];
+export function buildCsv(
+  placed: PlacedModule[],
+  physical: PhysicalConfig,
+): string {
+  const lines = [
+    "id,nominal_w_mm,nominal_d_mm,built_w_mm,built_d_mm,x,y,pos_x_mm,pos_y_mm,color",
+  ];
+
   for (const p of placed) {
-    lines.push(`${p.pid},${p.w * 7},${p.d * 7},${p.x},${p.y},${p.color}`);
+    const nominalW = p.w * MM;
+    const nominalD = p.d * MM;
+    const builtW = nominalW - physical.gapMm;
+    const builtD = nominalD - physical.gapMm;
+    const posX = p.x * MM + physical.gapMm / 2;
+    const posY = p.y * MM + physical.gapMm / 2;
+
+    lines.push(
+      `${p.pid},${nominalW},${nominalD},${builtW},${builtD},${p.x},${p.y},${posX},${posY},${p.color}`,
+    );
   }
-  const blob = new Blob([lines.join("\n")], { type: "text/csv" });
+
+  return lines.join("\n");
+}
+
+export function exportCSV(
+  placed: PlacedModule[],
+  physical: PhysicalConfig,
+): void {
+  const csv = buildCsv(placed, physical);
+  const blob = new Blob([csv], { type: "text/csv" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;

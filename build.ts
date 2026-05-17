@@ -33,22 +33,25 @@ Example:
   process.exit(0);
 }
 
-const toCamelCase = (str: string): string => str.replace(/-([a-z])/g, g => g[1].toUpperCase());
+const toCamelCase = (str: string): string =>
+  str.replace(/-([a-z])/g, (_match, char: string) => char.toUpperCase());
 
-const parseValue = (value: string): any => {
+const parseValue = (value: string): unknown => {
   if (value === "true") return true;
   if (value === "false") return false;
 
   if (/^\d+$/.test(value)) return parseInt(value, 10);
   if (/^\d*\.\d+$/.test(value)) return parseFloat(value);
 
-  if (value.includes(",")) return value.split(",").map(v => v.trim());
+  if (value.includes(",")) return value.split(",").map((v) => v.trim());
 
   return value;
 };
 
+type BuildConfigOverrides = Record<string, unknown>;
+
 function parseArgs(): Partial<Bun.BuildConfig> {
-  const config: Partial<Bun.BuildConfig> = {};
+  const config: BuildConfigOverrides = {};
   const args = process.argv.slice(2);
 
   for (let i = 0; i < args.length; i++) {
@@ -62,7 +65,10 @@ function parseArgs(): Partial<Bun.BuildConfig> {
       continue;
     }
 
-    if (!arg.includes("=") && (i === args.length - 1 || args[i + 1]?.startsWith("--"))) {
+    if (
+      !arg.includes("=") &&
+      (i === args.length - 1 || args[i + 1]?.startsWith("--"))
+    ) {
       const key = toCamelCase(arg.slice(2));
       config[key] = true;
       continue;
@@ -81,15 +87,25 @@ function parseArgs(): Partial<Bun.BuildConfig> {
     key = toCamelCase(key);
 
     if (key.includes(".")) {
-      const [parentKey, childKey] = key.split(".");
-      config[parentKey] = config[parentKey] || {};
-      config[parentKey][childKey] = parseValue(value);
+      const [parentKey, childKey] = key.split(".", 2);
+      if (!parentKey || !childKey) continue;
+
+      const parentValue = config[parentKey];
+      const parentConfig =
+        parentValue &&
+        typeof parentValue === "object" &&
+        !Array.isArray(parentValue)
+          ? (parentValue as BuildConfigOverrides)
+          : {};
+
+      parentConfig[childKey] = parseValue(value);
+      config[parentKey] = parentConfig;
     } else {
       config[key] = parseValue(value);
     }
   }
 
-  return config;
+  return config as Partial<Bun.BuildConfig>;
 }
 
 const formatFileSize = (bytes: number): string => {
@@ -118,9 +134,11 @@ if (existsSync(outdir)) {
 const start = performance.now();
 
 const entrypoints = [...new Bun.Glob("**.html").scanSync("src")]
-  .map(a => path.resolve("src", a))
-  .filter(dir => !dir.includes("node_modules"));
-console.log(`📄 Found ${entrypoints.length} HTML ${entrypoints.length === 1 ? "file" : "files"} to process\n`);
+  .map((a) => path.resolve("src", a))
+  .filter((dir) => !dir.includes("node_modules"));
+console.log(
+  `📄 Found ${entrypoints.length} HTML ${entrypoints.length === 1 ? "file" : "files"} to process\n`,
+);
 
 const result = await Bun.build({
   entrypoints,
@@ -137,7 +155,7 @@ const result = await Bun.build({
 
 const end = performance.now();
 
-const outputTable = result.outputs.map(output => ({
+const outputTable = result.outputs.map((output) => ({
   File: path.relative(process.cwd(), output.path),
   Type: output.kind,
   Size: formatFileSize(output.size),

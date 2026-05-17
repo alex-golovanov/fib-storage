@@ -1,7 +1,20 @@
 import { useState, useCallback, useMemo } from "react";
-import { PALETTE } from "../lib/constants";
+import {
+  GAP_MM_DEFAULT,
+  GAP_MM_MAX,
+  GRID,
+  MM,
+  OUTER_MM_DEFAULT,
+  OUTER_MM_MAX,
+  PALETTE,
+} from "../lib/constants";
 import { buildOcc, canPlace } from "../lib/grid-utils";
-import type { Module, PlacedModule, GridPos } from "../lib/types";
+import type {
+  GridPos,
+  Module,
+  PhysicalConfig,
+  PlacedModule,
+} from "../lib/types";
 
 export interface FibGridState {
   placed: PlacedModule[];
@@ -9,6 +22,13 @@ export interface FibGridState {
   rotated: boolean;
   hover: GridPos | null;
   colorIndex: number;
+  physical: PhysicalConfig;
+}
+
+const OUTER_MM_MIN = GRID * MM;
+
+function clamp(value: number, min: number, max: number) {
+  return Math.max(min, Math.min(max, value));
 }
 
 export function useFibGrid() {
@@ -17,6 +37,10 @@ export function useFibGrid() {
   const [rotated, setRotated] = useState(false);
   const [hover, setHover] = useState<GridPos | null>(null);
   const [colorIndex, setColorIndex] = useState(0);
+  const [physical, setPhysical] = useState<PhysicalConfig>({
+    gapMm: GAP_MM_DEFAULT,
+    outerMm: OUTER_MM_DEFAULT,
+  });
 
   const occ = useMemo(() => buildOcc(placed), [placed]);
 
@@ -29,7 +53,7 @@ export function useFibGrid() {
   const place = useCallback(
     (w: number, d: number, x: number, y: number) => {
       if (!canPlace(w, d, x, y, occ)) return false;
-      const color = PALETTE[colorIndex % PALETTE.length];
+      const color = PALETTE[colorIndex % PALETTE.length] ?? "#e8a23c";
       setPlaced((prev) => [
         ...prev,
         { w, d, x, y, color, pid: `${Date.now()}_${Math.random()}` },
@@ -37,7 +61,7 @@ export function useFibGrid() {
       setColorIndex((prev) => prev + 1);
       return true;
     },
-    [occ, colorIndex]
+    [occ, colorIndex],
   );
 
   const removeAt = useCallback(
@@ -47,7 +71,7 @@ export function useFibGrid() {
       setPlaced((prev) => prev.filter((p) => p.pid !== pid));
       return true;
     },
-    [occ]
+    [occ],
   );
 
   const select = useCallback((module: Module | null) => {
@@ -71,12 +95,31 @@ export function useFibGrid() {
     setColorIndex(modules.length);
   }, []);
 
+  const setGap = useCallback((gapMm: number) => {
+    setPhysical((prev) => ({ ...prev, gapMm: clamp(gapMm, 0, GAP_MM_MAX) }));
+  }, []);
+
+  const setOuter = useCallback((outerMm: number) => {
+    setPhysical((prev) => ({
+      ...prev,
+      outerMm: clamp(outerMm, OUTER_MM_MIN, OUTER_MM_MAX),
+    }));
+  }, []);
+
+  const loadPhysical = useCallback((cfg: PhysicalConfig) => {
+    setPhysical({
+      gapMm: clamp(cfg.gapMm, 0, GAP_MM_MAX),
+      outerMm: clamp(cfg.outerMm, OUTER_MM_MIN, OUTER_MM_MAX),
+    });
+  }, []);
+
   return {
     placed,
     selected,
     rotated,
     hover,
     colorIndex,
+    physical,
     effSelected,
     occ,
     place,
@@ -86,5 +129,8 @@ export function useFibGrid() {
     clearAll,
     setHoverPos,
     load,
+    setGap,
+    setOuter,
+    loadPhysical,
   };
 }
