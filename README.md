@@ -2,6 +2,8 @@
 
 Plan a modular storage layout on a Fibonacci-based grid. Choose a module, place it on the canvas, and adjust the clearance and surrounding wall to explore how the pieces fit together.
 
+![Four modules filling the Fib Storage grid](docs/images/fib-storage.png)
+
 The working area is a **34 × 34 unit grid**, with each unit measuring **7 mm**. That gives an inner area of **238 × 238 mm**. The module catalogue uses Fibonacci dimensions, and the planner prevents pieces from overlapping or extending beyond the grid.
 
 ## Use the planner
@@ -13,6 +15,7 @@ The working area is a **34 × 34 unit grid**, with each unit measuring **7 mm**.
 5. Use the export menu to download a PNG of the canvas or a JSON or CSV description of the layout.
 
 The toolbar shows the percentage of grid units occupied by modules. The **?** menu lists keyboard shortcuts and combinations of module widths that fill a row.
+Use **Ctrl+Z** (or **Cmd+Z** on macOS) to undo a placement, removal, or clear; use **Ctrl+Shift+Z** (or **Cmd+Shift+Z**) to redo it.
 
 Layouts and physical settings are saved in the browser's local storage. They stay in that browser and can be removed when its site data is cleared. Exported files are separate downloads.
 
