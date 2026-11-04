@@ -1,71 +1,68 @@
 # Fib Storage Simulator
 
-Plan a modular storage layout on a Fibonacci-based grid. Choose a module, place it on the canvas, and adjust the clearance and surrounding wall to explore how the pieces fit together.
+**Plan a modular storage layout before you print the parts.** Fib Storage Simulator is a small, local web app for arranging Fibonacci-sized modules on a fixed grid, exploring how they fit together, and accounting for the gaps and frame around them.
 
-![Four modules filling the Fib Storage grid](docs/images/fib-storage.png)
+It is useful when prototyping 3D-printed storage: try different arrangements, check the occupied area, and export the dimensions without drawing each layout by hand. The app plans **2D footprints**; it does not generate printable 3D models or STL files.
 
-The working area is a **34 × 34 unit grid**, with each unit measuring **7 mm**. That gives an inner area of **238 × 238 mm**. The module catalogue uses Fibonacci dimensions, and the planner prevents pieces from overlapping or extending beyond the grid.
+![Fib Storage Simulator showing three modules on the grid and a fourth selected in the catalogue](docs/images/fib-storage.png)
+
+_An in-progress layout: three placed modules, remaining space, and a selected module in the catalogue._
+
+## What you can do
+
+- **Arrange modules:** choose from 13 rectangular modules, rotate them, and place them on the grid. The planner prevents overlaps and out-of-bounds placements.
+- **Check the fit:** see the filled percentage and dimensions, and adjust the clearance and outer wall for a physical assembly.
+- **Keep exploring:** undo and redo placements, removals, and clearing. The current layout and settings are saved in your browser.
+- **Take the plan with you:** export the canvas as PNG or the layout and dimensions as JSON or CSV.
+
+## Grid and physical settings
+
+The inner grid is fixed at **34 × 34 units**. One unit is **7 mm**, making the working area **238 × 238 mm**. Module dimensions use the Fibonacci unit sizes 3, 5, 8, 13, 21, and 34; the catalogue offers 13 combinations.
+
+![Gap and wall controls set to 0.6 mm and 3.0 mm](docs/images/fib-storage-settings.png)
+
+_The controls show the gap between pieces and the thickness of the wall outside the grid._
+
+| Setting  | Range and default                                  | What it changes                                                                                                                                     |
+| -------- | -------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Gap**  | 0–1 mm, in 0.1 mm steps; default **0.3 mm**        | Clearance between modules. Each module is inset by half the gap on each side, so its built width and depth are each the nominal size minus the gap. |
+| **Wall** | 0–9 mm per side, in 0.5 mm steps; default **0 mm** | A frame outside the fixed inner grid. The outer size ranges from 238 × 238 mm to 256 × 256 mm.                                                      |
+
+For example, a nominal **91 × 91 mm** module with a **0.3 mm** gap has a displayed built footprint of **90.7 × 90.7 mm**. A **3 mm** wall increases the outer footprint to **244 × 244 mm**. These are planning dimensions; choose tolerances appropriate for your own printer and materials.
 
 ## Use the planner
 
-1. Select a shape from the module catalogue.
-2. Move the pointer over the grid and click to place it. Right-click a placed piece to remove it.
-3. Use **R** or the rotate button to rotate the selected shape. Press **Escape** to deselect it.
-4. Adjust **Gap** to change the clearance between pieces, and **Wall** to adjust the surrounding frame.
-5. Use the export menu to download a PNG of the canvas or a JSON or CSV description of the layout.
+1. Choose a module from the catalogue on the right.
+2. Move over the grid and click to place it. Right-click a placed module to remove it.
+3. Press **R** or use **Rotate** to rotate the selection; press **Escape** to deselect it.
+4. Adjust **Gap** and **Wall** in the toolbar. Use **?** to see shortcuts and row combinations.
+5. Open the **⋯** menu to export PNG, JSON, or CSV. JSON and CSV include nominal and built dimensions and positions.
 
-The toolbar shows the percentage of grid units occupied by modules. The **?** menu lists keyboard shortcuts and combinations of module widths that fill a row.
-Use **Ctrl+Z** (or **Cmd+Z** on macOS) to undo a placement, removal, or clear; use **Ctrl+Shift+Z** (or **Cmd+Shift+Z**) to redo it.
+Use **Ctrl+Z** (or **Cmd+Z** on macOS) to undo and **Ctrl+Shift+Z** (or **Cmd+Shift+Z**) to redo. Your layout is stored in browser local storage and stays on that device; clearing site data removes it. Exports are separate downloads, not backups that the app can import.
 
-Layouts and physical settings are saved in the browser's local storage. They stay in that browser and can be removed when its site data is cleared. Exported files are separate downloads.
-
-The current interface requires a viewport at least **1024 pixels wide**; smaller screens show a notice instead of the planner.
+The interface currently requires a viewport at least **1024 pixels wide**. Smaller screens show a notice instead of the planner.
 
 ## Run locally
 
-Requires [Bun](https://bun.com/). From the repository directory:
+Requires [Bun](https://bun.com/):
 
 ```sh
+git clone https://github.com/alex-golovanov/fib-storage.git
+cd fib-storage
 bun install --frozen-lockfile
 bun run dev
 ```
 
-Open the local URL printed by the server. The development server uses Bun's HTML bundling and hot reload.
+Open the local URL printed by the server. For a production-mode server, use `bun run start`. To create a browser build in `dist/`, use `bun run build`; the build script replaces the existing output directory.
 
-For a production-mode server:
-
-```sh
-bun run start
-```
-
-To create a browser build in `dist/`:
-
-```sh
-bun run build
-```
-
-The build script removes the existing output directory before writing the new build.
-
-## Tests
+## Development checks
 
 ```sh
 bun test
-```
-
-The test suite covers grid placement, canvas sizing and drawing, exports, and persistence helpers.
-
-Run the lint and formatting checks with:
-
-```sh
 bun run lint
 bun run format:check
 ```
 
-To apply the project's formatting, run `bun run format`. Historical design and planning documents under `docs/superpowers/` are excluded from formatting.
+Run `bun run format` to apply the project's formatting. Historical design and planning documents under `docs/superpowers/` are excluded from formatting.
 
-## Project structure
-
-- `src/FibGrid/components/` — canvas, toolbar, module catalogue, and viewport notice.
-- `src/FibGrid/hooks/` — layout state, history, and local persistence.
-- `src/FibGrid/lib/` — grid calculations, rendering, sizing, and exports.
-- `src/index.ts` — Bun development and production server.
+The application uses React and TypeScript, with Bun serving the app. The planner lives in `src/FibGrid/`: components handle the interface, hooks manage layout and persistence, and `lib/` contains grid calculations, drawing, and exports.
