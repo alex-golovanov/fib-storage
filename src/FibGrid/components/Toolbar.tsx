@@ -43,7 +43,10 @@ export function Toolbar({
   const pct = Math.round((filledU / (GRID * GRID)) * 100);
 
   return (
-    <div className="flex items-center gap-6 px-6 py-3" style={{ borderBottom: "1px solid #1a1c24" }}>
+    <div
+      className="flex items-center gap-6 px-6 py-3"
+      style={{ borderBottom: "1px solid #1a1c24" }}
+    >
       <div>
         <span className="text-[11px] uppercase tracking-[2px]" style={{ color: "#44475a" }}>
           φ Storage Grid
@@ -61,7 +64,9 @@ export function Toolbar({
           className="flex items-center gap-2 text-[10px] uppercase tracking-[1.5px]"
           style={{ color: "#888aaa" }}
         >
-          <span className="w-9" style={{ color: "#555769" }}>Gap</span>
+          <span className="w-9" style={{ color: "#555769" }}>
+            Gap
+          </span>
           <input
             type="range"
             min={0}
@@ -79,7 +84,9 @@ export function Toolbar({
           className="flex items-center gap-2 text-[10px] uppercase tracking-[1.5px]"
           style={{ color: "#888aaa" }}
         >
-          <span className="w-9" style={{ color: "#555769" }}>Wall</span>
+          <span className="w-9" style={{ color: "#555769" }}>
+            Wall
+          </span>
           <input
             type="range"
             min={OUTER_MM_MIN}
@@ -101,7 +108,9 @@ export function Toolbar({
         <div className="text-[28px] font-bold leading-none" style={{ color: "#e8a23c" }}>
           {pct}%
         </div>
-        <div className="text-[9px]" style={{ color: "#555769" }}>filled</div>
+        <div className="text-[9px]" style={{ color: "#555769" }}>
+          filled
+        </div>
       </div>
 
       <Popover
@@ -122,7 +131,10 @@ export function Toolbar({
       >
         <div className="flex flex-col gap-3" style={{ minWidth: 260 }}>
           <div>
-            <div className="text-[9px] uppercase tracking-[1px] mb-1.5" style={{ color: "#44475a" }}>
+            <div
+              className="text-[9px] uppercase tracking-[1px] mb-1.5"
+              style={{ color: "#44475a" }}
+            >
               Shortcuts
             </div>
             <div className="flex flex-col gap-1 text-[10px]" style={{ color: "#888aaa" }}>
@@ -134,7 +146,10 @@ export function Toolbar({
             </div>
           </div>
           <div>
-            <div className="text-[9px] uppercase tracking-[1px] mb-1.5" style={{ color: "#44475a" }}>
+            <div
+              className="text-[9px] uppercase tracking-[1px] mb-1.5"
+              style={{ color: "#44475a" }}
+            >
               Valid row combos (sum = 34u)
             </div>
             <div className="flex flex-wrap gap-[5px]">

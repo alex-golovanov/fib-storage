@@ -11,12 +11,7 @@ import {
   drawRulerTicks,
   drawHoverPreview,
 } from "../lib/canvas-draw";
-import type {
-  GridPos,
-  Module,
-  PhysicalConfig,
-  PlacedModule,
-} from "../lib/types";
+import type { GridPos, Module, PhysicalConfig, PlacedModule } from "../lib/types";
 
 interface CanvasProps {
   placed: PlacedModule[];
@@ -90,16 +85,7 @@ export function Canvas({
 
     if (hover && effSelected) {
       const ok = canPlace(effSelected.w, effSelected.d, hover.x, hover.y, occ);
-      drawHoverPreview(
-        ctx,
-        hover,
-        effSelected.w,
-        effSelected.d,
-        ok,
-        u,
-        PAD + wallPx,
-        gapPx,
-      );
+      drawHoverPreview(ctx, hover, effSelected.w, effSelected.d, ok, u, PAD + wallPx, gapPx);
     }
   }, [placed, hover, effSelected, occ, gapPx, wallPx, cw, ch, innerPx, u]);
 

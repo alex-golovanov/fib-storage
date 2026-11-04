@@ -9,10 +9,7 @@ export function MinViewportNotice() {
       }}
     >
       <div>
-        <div
-          className="text-[11px] uppercase tracking-[2px] mb-3"
-          style={{ color: "#44475a" }}
-        >
+        <div className="text-[11px] uppercase tracking-[2px] mb-3" style={{ color: "#44475a" }}>
           φ Storage Grid
         </div>
         <div className="text-[18px] font-bold mb-2" style={{ color: "#e8e8f0" }}>

@@ -25,12 +25,7 @@ function useViewportWidth() {
 export default function FibGrid() {
   const grid = useFibGrid();
   const { undo, redo, pushHistory } = useUndoRedo(grid);
-  const { exportJSON } = usePersistence(
-    grid.placed,
-    grid.physical,
-    grid.load,
-    grid.loadPhysical,
-  );
+  const { exportJSON } = usePersistence(grid.placed, grid.physical, grid.load, grid.loadPhysical);
   const width = useViewportWidth();
 
   useEffect(() => {

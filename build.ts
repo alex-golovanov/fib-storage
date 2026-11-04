@@ -65,10 +65,7 @@ function parseArgs(): Partial<Bun.BuildConfig> {
       continue;
     }
 
-    if (
-      !arg.includes("=") &&
-      (i === args.length - 1 || args[i + 1]?.startsWith("--"))
-    ) {
+    if (!arg.includes("=") && (i === args.length - 1 || args[i + 1]?.startsWith("--"))) {
       const key = toCamelCase(arg.slice(2));
       config[key] = true;
       continue;
@@ -92,9 +89,7 @@ function parseArgs(): Partial<Bun.BuildConfig> {
 
       const parentValue = config[parentKey];
       const parentConfig =
-        parentValue &&
-        typeof parentValue === "object" &&
-        !Array.isArray(parentValue)
+        parentValue && typeof parentValue === "object" && !Array.isArray(parentValue)
           ? (parentValue as BuildConfigOverrides)
           : {};
 

@@ -3,13 +3,7 @@ import { GRID } from "./constants";
 import { buildOcc, canPlace } from "./grid-utils";
 import type { PlacedModule } from "./types";
 
-const mod = (
-  pid: string,
-  w: number,
-  d: number,
-  x: number,
-  y: number,
-): PlacedModule => ({
+const mod = (pid: string, w: number, d: number, x: number, y: number): PlacedModule => ({
   pid,
   w,
   d,

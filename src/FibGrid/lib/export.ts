@@ -13,13 +13,8 @@ export function exportPNG(canvas: HTMLCanvasElement): void {
   }, "image/png");
 }
 
-export function buildCsv(
-  placed: PlacedModule[],
-  physical: PhysicalConfig,
-): string {
-  const lines = [
-    "id,nominal_w_mm,nominal_d_mm,built_w_mm,built_d_mm,x,y,pos_x_mm,pos_y_mm,color",
-  ];
+export function buildCsv(placed: PlacedModule[], physical: PhysicalConfig): string {
+  const lines = ["id,nominal_w_mm,nominal_d_mm,built_w_mm,built_d_mm,x,y,pos_x_mm,pos_y_mm,color"];
 
   for (const p of placed) {
     const nominalW = p.w * MM;
@@ -37,10 +32,7 @@ export function buildCsv(
   return lines.join("\n");
 }
 
-export function exportCSV(
-  placed: PlacedModule[],
-  physical: PhysicalConfig,
-): void {
+export function exportCSV(placed: PlacedModule[], physical: PhysicalConfig): void {
   const csv = buildCsv(placed, physical);
   const blob = new Blob([csv], { type: "text/csv" });
   const url = URL.createObjectURL(blob);

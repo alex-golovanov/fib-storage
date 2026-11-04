@@ -9,12 +9,7 @@ import {
   PALETTE,
 } from "../lib/constants";
 import { buildOcc, canPlace } from "../lib/grid-utils";
-import type {
-  GridPos,
-  Module,
-  PhysicalConfig,
-  PlacedModule,
-} from "../lib/types";
+import type { GridPos, Module, PhysicalConfig, PlacedModule } from "../lib/types";
 
 export interface FibGridState {
   placed: PlacedModule[];
@@ -54,10 +49,7 @@ export function useFibGrid() {
     (w: number, d: number, x: number, y: number) => {
       if (!canPlace(w, d, x, y, occ)) return false;
       const color = PALETTE[colorIndex % PALETTE.length] ?? "#e8a23c";
-      setPlaced((prev) => [
-        ...prev,
-        { w, d, x, y, color, pid: `${Date.now()}_${Math.random()}` },
-      ]);
+      setPlaced((prev) => [...prev, { w, d, x, y, color, pid: `${Date.now()}_${Math.random()}` }]);
       setColorIndex((prev) => prev + 1);
       return true;
     },

@@ -1,9 +1,5 @@
 import { expect, test } from "bun:test";
-import {
-  drawFrameWall,
-  drawHoverPreview,
-  drawPlacedModules,
-} from "./canvas-draw";
+import { drawFrameWall, drawHoverPreview, drawPlacedModules } from "./canvas-draw";
 import type { PlacedModule } from "./types";
 
 interface Call {
@@ -43,13 +39,7 @@ function makeCtx() {
   return new Proxy({}, handler) as CanvasRenderingContext2D & { calls: Call[] };
 }
 
-const mod = (
-  pid: string,
-  w: number,
-  d: number,
-  x: number,
-  y: number,
-): PlacedModule => ({
+const mod = (pid: string, w: number, d: number, x: number, y: number): PlacedModule => ({
   pid,
   w,
   d,
@@ -107,12 +97,8 @@ test("drawPlacedModules with gapPx>0 keeps the nominal reserved footprint visibl
   expect(reservedFill).toBeDefined();
   expect(actualFill).toBeDefined();
 
-  expect(reservedFill!.args as [number, number, number, number]).toEqual([
-    28, 28, 30, 30,
-  ]);
-  expect(actualFill!.args as [number, number, number, number]).toEqual([
-    30, 30, 26, 26,
-  ]);
+  expect(reservedFill!.args as [number, number, number, number]).toEqual([28, 28, 30, 30]);
+  expect(actualFill!.args as [number, number, number, number]).toEqual([30, 30, 26, 26]);
 });
 
 test("drawPlacedModules with gapPx>0 labels the built module size", () => {
@@ -156,12 +142,8 @@ test("drawHoverPreview with gapPx>0 keeps the nominal reserved footprint visible
   expect(reservedFill).toBeDefined();
   expect(actualFill).toBeDefined();
 
-  expect(reservedFill!.args as [number, number, number, number]).toEqual([
-    28, 28, 30, 30,
-  ]);
-  expect(actualFill!.args as [number, number, number, number]).toEqual([
-    30, 30, 26, 26,
-  ]);
+  expect(reservedFill!.args as [number, number, number, number]).toEqual([28, 28, 30, 30]);
+  expect(actualFill!.args as [number, number, number, number]).toEqual([30, 30, 26, 26]);
 });
 
 test("drawFrameWall with wallPx=0 is a no-op", () => {
@@ -183,8 +165,6 @@ test("drawFrameWall with wallPx>0 fills the wall ring outside the inner area", (
   const fills = ctx.calls.filter((call) => call.method === "fillRect");
   expect(fills.length).toBeGreaterThan(0);
 
-  const minX = Math.min(
-    ...fills.map((fill) => (fill.args as number[])[0] as number),
-  );
+  const minX = Math.min(...fills.map((fill) => (fill.args as number[])[0] as number));
   expect(minX).toBe(18);
 });

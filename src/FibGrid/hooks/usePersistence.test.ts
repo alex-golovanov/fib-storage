@@ -122,9 +122,7 @@ test("usePersistence loads the stored layout before the first save", async () =>
 });
 
 test("_buildExportJson includes physical, built_mm, and position_mm", () => {
-  const placed: PlacedModule[] = [
-    { pid: "p1", w: 3, d: 5, x: 2, y: 4, color: "#aabbcc" },
-  ];
+  const placed: PlacedModule[] = [{ pid: "p1", w: 3, d: 5, x: 2, y: 4, color: "#aabbcc" }];
   const physical: PhysicalConfig = { gapMm: 0.5, outerMm: 250 };
 
   const data = _buildExportJson(placed, physical);
@@ -169,13 +167,7 @@ test("usePersistence debounces saves and persists the latest slider value", asyn
     value: storage,
   });
 
-  function Harness({
-    placed,
-    physical,
-  }: {
-    placed: PlacedModule[];
-    physical: PhysicalConfig;
-  }) {
+  function Harness({ placed, physical }: { placed: PlacedModule[]; physical: PhysicalConfig }) {
     usePersistence(
       placed,
       physical,

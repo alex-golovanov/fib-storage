@@ -32,10 +32,7 @@ export function _migrate(data: StoredLayout): StoredLayoutV2 {
   };
 }
 
-export function _buildExportJson(
-  placed: PlacedModule[],
-  physical: PhysicalConfig,
-) {
+export function _buildExportJson(placed: PlacedModule[], physical: PhysicalConfig) {
   const wallMm = (physical.outerMm - GRID * MM) / 2;
   return {
     version: 2,
@@ -64,9 +61,7 @@ export function _buildExportJson(
     stats: {
       totalModules: placed.length,
       filledUnits: placed.reduce((s, p) => s + p.w * p.d, 0),
-      fillPercentage: Math.round(
-        (placed.reduce((s, p) => s + p.w * p.d, 0) / (GRID * GRID)) * 100,
-      ),
+      fillPercentage: Math.round((placed.reduce((s, p) => s + p.w * p.d, 0) / (GRID * GRID)) * 100),
     },
   };
 }

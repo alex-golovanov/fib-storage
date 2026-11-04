@@ -42,12 +42,7 @@ export function drawPlacedModules(
       ctx.fillRect(nominalX, nominalY, nominalW, nominalH);
       ctx.strokeStyle = p.color + "38";
       ctx.lineWidth = 1;
-      ctx.strokeRect(
-        nominalX + 0.5,
-        nominalY + 0.5,
-        nominalW - 1,
-        nominalH - 1,
-      );
+      ctx.strokeRect(nominalX + 0.5, nominalY + 0.5, nominalW - 1, nominalH - 1);
     }
 
     ctx.fillStyle = p.color + "28";

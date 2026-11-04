@@ -67,10 +67,7 @@ export function ModulePalette({
 }: ModulePaletteProps) {
   return (
     <div className="flex flex-col gap-3">
-      <div
-        className="text-[9px] uppercase tracking-[2px]"
-        style={{ color: "#44475a" }}
-      >
+      <div className="text-[9px] uppercase tracking-[2px]" style={{ color: "#44475a" }}>
         Module Catalogue
       </div>
 

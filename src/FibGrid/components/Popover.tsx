@@ -33,13 +33,15 @@ export function Popover({ trigger, children, align = "right" }: PopoverProps) {
       {open && (
         <div
           className="absolute z-50 mt-2 min-w-[200px]"
-          style={{
-            [align]: 0,
-            background: "#15161c",
-            border: "1px solid #2e3040",
-            padding: "10px",
-            boxShadow: "0 8px 24px rgba(0,0,0,0.5)",
-          } as React.CSSProperties}
+          style={
+            {
+              [align]: 0,
+              background: "#15161c",
+              border: "1px solid #2e3040",
+              padding: "10px",
+              boxShadow: "0 8px 24px rgba(0,0,0,0.5)",
+            } as React.CSSProperties
+          }
           onClick={() => setOpen(false)}
         >
           {children}
