@@ -77,6 +77,12 @@ export default function FibGrid() {
     [grid, pushHistory],
   );
 
+  const handleClearAll = useCallback(() => {
+    if (grid.placed.length === 0) return;
+    pushHistory();
+    grid.clearAll();
+  }, [grid, pushHistory]);
+
   const handleExportPNG = useCallback(() => {
     const canvas = document.querySelector("canvas");
     if (canvas) exportPNG(canvas);
@@ -105,7 +111,7 @@ export default function FibGrid() {
           onExportJSON={exportJSON}
           onExportPNG={handleExportPNG}
           onExportCSV={() => exportCSV(grid.placed, grid.physical)}
-          onClearAll={grid.clearAll}
+          onClearAll={handleClearAll}
         />
         <Canvas
           placed={grid.placed}
