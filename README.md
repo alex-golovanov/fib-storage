@@ -54,6 +54,15 @@ bun test
 
 The test suite covers grid placement, canvas sizing and drawing, exports, and persistence helpers.
 
+Run the lint and formatting checks with:
+
+```sh
+bun run lint
+bun run format:check
+```
+
+To apply the project's formatting, run `bun run format`. Historical design and planning documents under `docs/superpowers/` are excluded from formatting.
+
 ## Project structure
 
 - `src/FibGrid/components/` — canvas, toolbar, module catalogue, and viewport notice.

@@ -2,7 +2,9 @@ import { GRID } from "./constants";
 import type { PlacedModule, GridPos } from "./types";
 
 export function buildOcc(placed: PlacedModule[]): (string | null)[][] {
-  const occ = Array.from({ length: GRID }, () => new Array(GRID).fill(null));
+  const occ = Array.from({ length: GRID }, () =>
+    Array.from({ length: GRID }, (): string | null => null),
+  );
 
   for (const p of placed) {
     for (let dy = 0; dy < p.d; dy++) {
@@ -58,11 +60,7 @@ export function toGrid(
   };
 }
 
-export function findModuleAt(
-  x: number,
-  y: number,
-  occ: (string | null)[][],
-): string | null {
+export function findModuleAt(x: number, y: number, occ: (string | null)[][]): string | null {
   if (y < 0 || y >= GRID || x < 0 || x >= GRID) return null;
 
   return occ[y]?.[x] ?? null;

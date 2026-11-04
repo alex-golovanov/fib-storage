@@ -1,6 +1,6 @@
 import { expect, test } from "bun:test";
 import { computeU } from "./canvas-sizing";
-import { GRID, PAD, U_MIN } from "./constants";
+import { U_MIN } from "./constants";
 
 test("computeU: returns largest integer U that fits in the container", () => {
   // container 800x800, wallPx 0 => available = 800 - 2*PAD = 744
